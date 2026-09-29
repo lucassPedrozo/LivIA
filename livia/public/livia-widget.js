@@ -911,6 +911,7 @@
 		var convite = null;
 		var relogioConvite = null;
 		var sugestoes = null;
+		var saudacao = null; // a primeira fala, enquanto ainda está sendo escrita
 		var perguntasFeitas = 0;
 		var propostasFeitas = false;
 		var jaPerguntadas = {};
@@ -966,15 +967,53 @@
 		async function apresentar() {
 			var texto = cfg.saudacao || 'Oi! Tô aqui pra ajudar com o briefing. Travou em alguma parte?';
 			var espera = tela.digitando();
+			var vaga = null;
+			var rev = null;
+			var pronta = false;
+
+			// Idempotente: termina pelo caminho normal ou atropelada pelo
+			// cliente, mas anota a fala uma vez só.
+			function concluir() {
+				if ( pronta ) {
+					return;
+				}
+				pronta = true;
+				saudacao = null;
+				vaga.concluir();
+				memoria.anotar( 'livia', texto, agora() );
+			}
+
+			// Quem escreve antes de a saudação terminar não espera por ela: a
+			// fala termina na hora, no lugar dela. Sem isto, o balão do cliente
+			// entrava ANTES do "Oi!" — o balão da saudação só nasce depois da
+			// pausa de digitação —, e as sugestões apareciam depois da pergunta,
+			// quando já não serviam para nada.
+			saudacao = {
+				atropelar: function () {
+					if ( ! vaga ) {
+						espera.remover();
+						vaga = tela.balaoVazio( 'livia', agora() );
+						rev = Revelador( vaga.balao, tela );
+					}
+					rev.trocarPor( texto );
+					concluir();
+				}
+			};
+
 			await esperar( semAnimacao ? 0 : aleatorio( 500, 500 ) );
+			if ( pronta ) {
+				return;
+			}
 			espera.remover();
 
-			var vaga = tela.balaoVazio( 'livia', agora() );
-			var rev = Revelador( vaga.balao, tela );
+			vaga = tela.balaoVazio( 'livia', agora() );
+			rev = Revelador( vaga.balao, tela );
 			rev.empurrar( texto );
 			await rev.esvaziar();
-			vaga.concluir();
-			memoria.anotar( 'livia', texto, agora() );
+			if ( pronta ) {
+				return;
+			}
+			concluir();
 
 			// Uma caixa de texto vazia não diz a ninguém o que dá para
 			// perguntar. Três exemplos dizem — e somem no primeiro envio.
@@ -1113,6 +1152,11 @@
 				ajustarAltura();
 			}
 			ajustarBotao();
+
+			// A saudação vem antes da pergunta, sempre.
+			if ( saudacao ) {
+				saudacao.atropelar();
+			}
 
 			// A pessoa já sabe o que perguntar: os exemplos cumpriram o papel.
 			if ( sugestoes ) {
