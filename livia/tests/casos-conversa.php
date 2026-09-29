@@ -1,6 +1,6 @@
 <?php
 /**
- * Casos da fase 3: o que acontece quando a conversa dá errado, e o sinal de
+ * Casos da conversa: o que acontece quando a conversa dá errado, e o sinal de
  * que ela deu certo.
  *
  * Três defeitos vieram do CSV da homologação:

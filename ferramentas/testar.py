@@ -5,18 +5,18 @@ Bateria de comportamento da LivIA.
 Roda as perguntas de casos_de_teste.json contra o ENDPOINT DO PLUGIN e confere
 cada resposta automaticamente.
 
-    python testar.py              # roda tudo
-    python testar.py dominio      # só os casos que contêm "dominio" na pergunta
-    python testar.py --ver        # mostra a resposta inteira de cada caso
+    python ferramentas/testar.py              # roda tudo
+    python ferramentas/testar.py dominio      # só os casos que contêm "dominio" na pergunta
+    python ferramentas/testar.py --ver        # mostra a resposta inteira de cada caso
 
 Por que contra o endpoint, e não contra o Gemini direto: assim a bateria testa a
 LivIA que o cliente encontra — com a trava, o prompt anti-injeção e os limites no
 caminho. Chamar a API direto testava metade do sistema e dava verde num plugin
 que podia estar quebrado.
 
-Configuração — .env nesta pasta:
+Configuração — .env na raiz do projeto:
     LIVIA_URL=https://homologacao.exemplo.com.br
-    CANAL_DE_SUPORTE=WhatsApp (47) 3433-5066
+    CANAL_DE_SUPORTE=WhatsApp (00) 0000-0000
 
 ⚠ Aponte para HOMOLOGAÇÃO, nunca para produção: a bateria gasta cota real e
 enche a tabela de atendimentos com conversa de robô. E a homologação precisa

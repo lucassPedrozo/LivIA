@@ -31,5 +31,8 @@ composer.lock
 # arquivos de referencia dos testes
 ref*.txt
 
-# servidor local do banco de provas do widget (ferramenta de desenvolvimento)
-.claude/launch.json
+# configuração local do editor/assistente
+.claude/
+
+# notas internas de processo, que não fazem parte do produto
+VALIDAR-SECAO-7.md

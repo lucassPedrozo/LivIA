@@ -31,8 +31,8 @@ jobs:
 
       - name: Paridade da base entre PHP e Python
         run: |
-          python -c "import livia, sys; open(sys.argv[1],'w',encoding='utf-8',newline='').write(livia.carregar_base())" ref.txt
+          PYTHONPATH=ferramentas python -c "import livia, sys; open(sys.argv[1],'w',encoding='utf-8',newline='').write(livia.carregar_base())" ref.txt
           php livia/tests/paridade-base.php ref.txt ""
 
       - name: casos_de_teste.json é JSON válido
-        run: python -c "import json; print(len(json.load(open('casos_de_teste.json',encoding='utf-8'))), 'casos')"
+        run: python -c "import json; print(len(json.load(open('ferramentas/casos_de_teste.json',encoding='utf-8'))), 'casos')"

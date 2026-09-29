@@ -13,20 +13,38 @@ atendimento humano em vez de inventar.
 
 ## O plugin de WordPress
 
-O terminal foi a fase de calibragem. O produto é o plugin, em `livia/`: instala no
-WordPress, aparece na página por shortcode, e responde em streaming com a trava rodando no
-servidor.
+O produto é o plugin, em `livia/`: instala no WordPress, aparece na página por shortcode, e
+responde em streaming com a trava rodando no servidor.
 
-| Peça | Estado |
+| Peça | Onde mora |
 |---|---|
-| `base_conhecimento.md` | ✅ Vai inteira. Já mora dentro do plugin. |
-| `.env` | ✅ Virou tela de configuração (`Configurações → LivIA`). |
-| `verificar_resposta` / `permitidos` | ✅ `Livia_Trava`, com cinco regras a mais que o Python. |
-| `chamar_gemini` | ✅ `Livia_Gemini`, com retry, prazo curto e streaming. |
-| Endpoint, sessão e defesa de cota | ✅ `Livia_Rest`, `Livia_Sessao`, `Livia_Limites`, `Livia_Prompt`. |
-| Streaming com ritmo humano | ✅ `Livia_Sse`, `Livia_Stream`, widget `[livia]`. |
-| Registro, métricas e LGPD | ✅ `Livia_Registro` + painéis em *Configurações → LivIA*. |
-| `casos_de_teste.json` | ✅ Intocado. O `testar.py` passou a apontar para o endpoint. |
+| Base de conhecimento | `livia/conhecimento/base_conhecimento.md` |
+| Configuração | *Configurações → LivIA* (`Livia_Config`) |
+| Trava anti-alucinação | `Livia_Trava` |
+| Cliente da API, com retry, prazo curto e streaming | `Livia_Gemini`, `Livia_Sse`, `Livia_Stream` |
+| Rotas, sessão, limites e anti-injeção | `Livia_Rest`, `Livia_Sessao`, `Livia_Limites`, `Livia_Prompt` |
+| Widget com ritmo humano | `Livia_Widget` + `livia/public/` |
+| Registro, métricas e LGPD | `Livia_Registro` + painéis em *Configurações → LivIA* |
+| Bateria de comportamento | `ferramentas/testar.py` + `ferramentas/casos_de_teste.json` |
+
+### Rodar sem WordPress
+
+`local/` tem um WordPress de mentira (`wp-falso.php`, com o registro num SQLite
+temporário) e um roteador para o servidor embutido do PHP. O widget, as rotas e o painel
+são os de produção:
+
+```bash
+php -S localhost:8765 local/servidor.php
+```
+
+Com `GEMINI_API_KEY` no `.env`, a conversa vai ao modelo de verdade. Sem chave — ou com
+`LIVIA_LABORATORIO=1` —, o modelo é trocado por respostas de laboratório
+(`local/respostas.php`) que entram pelos mesmos filtros `livia_pre_gerar*` da suíte: a
+trava, a janela retida e o registro continuam sendo o código de produção.
+
+`php local/semear.php` enche o painel com duas semanas de conversas fictícias, e
+`node local/capturas.mjs` regenera as imagens de `assets/livia/` com o Chrome em modo
+headless, falando o protocolo do DevTools direto — sem dependência para instalar.
 
 ### Instalar para desenvolver
 
@@ -196,7 +214,7 @@ valor, percentual e URL são padrões curtos — nenhum chega perto de 120 bytes
 ocorrência, no instante em que fica completa, termina sempre depois do ponto já emitido.
 **Um contato inventado nunca sai inteiro.**
 
-Isso é testado byte a byte: `casos-fase4.php` passa a resposta em pedaços de 1 byte, o pior
+Isso é testado byte a byte: `casos-streaming.php` passa a resposta em pedaços de 1 byte, o pior
 caso possível, e confere que a sequência proibida jamais aparece no que foi para a tela.
 
 ### Quando o streaming não funciona
@@ -268,11 +286,8 @@ não existe, porque o cliente escreve o próprio `X-Forwarded-For`:
 define( 'LIVIA_HEADER_IP', 'HTTP_CF_CONNECTING_IP' );
 ```
 
-> `livia.py` continua existindo como protótipo de terminal, para calibrar uma resposta
-> rápido sem subir nada. A trava dele é a versão antiga e mais fraca — o que vale para
-> produção é a do plugin.
-
-O que é 100% descartável: o loop de terminal, as cores ANSI e `input()`.
+> `ferramentas/livia.py` é o protótipo de terminal, para calibrar uma resposta rápido sem
+> subir nada. A trava dele é a versão mais simples — o que vale para produção é a do plugin.
 
 ---
 
@@ -306,7 +321,7 @@ primeira.**
 php livia/tests/rodar.php
 ```
 
-75 casos, 50 milissegundos, nenhuma dependência: sem composer, sem `vendor/`, sem banco,
+185 casos, menos de um segundo, nenhuma dependência: sem composer, sem `vendor/`, sem banco,
 sem HTTP e sem gastar cota. Cobre a trava, a leitura do streaming, a janela retida, os
 limites, a sessão, a camada anti-injeção e a redação de dado pessoal.
 
@@ -321,16 +336,16 @@ instalado.
 |---|---|
 | `tests/casos-trava.php` | A trava: contato, valor, percentual, URL e vazamento da base. |
 | `tests/casos-gemini.php` | A leitura da resposta da API: truncamento, bloqueio de segurança, tokens, JSON quebrado. |
-| `tests/casos-fase3.php` | Token, sessão, limites de ritmo, disjuntor e anti-injeção — o fluxo do endpoint inteiro, com a API substituída por um filtro. |
-| `tests/casos-fase4.php` | Leitura de SSE e a janela retida, byte a byte. |
-| `tests/casos-fase5.php` | Redação de dado pessoal e cálculo de p95. |
+| `tests/casos-endpoint.php` | Token, sessão, limites de ritmo, disjuntor e anti-injeção — o fluxo do endpoint inteiro, com a API substituída por um filtro. |
+| `tests/casos-streaming.php` | Leitura de SSE e a janela retida, byte a byte. |
+| `tests/casos-privacidade.php` | Redação de dado pessoal e cálculo de p95. |
 | `tests/casos-config.php` | Configuração e invalidação do cache da base. |
 | `tests/paridade-base.php` | A base do PHP é byte a byte igual à do Python? |
 
 O teste de paridade precisa do Python para gerar a referência:
 
 ```bash
-python -c "import livia; livia.carregar_env(); open('ref.txt','w',encoding='utf-8',newline='').write(livia.carregar_base())"
+PYTHONPATH=ferramentas python -c "import livia; livia.carregar_env(); open('ref.txt','w',encoding='utf-8',newline='').write(livia.carregar_base())"
 php livia/tests/paridade-base.php ref.txt "WhatsApp (47) 3433-5066"
 ```
 
@@ -340,12 +355,12 @@ valem mais para as duas ao mesmo tempo.
 ### 2. Comportamento — ao mexer na base
 
 ```bash
-python testar.py
-python testar.py dominio    # só os casos com "dominio" na pergunta
-python testar.py --ver      # mostra a resposta inteira de cada caso
+python ferramentas/testar.py
+python ferramentas/testar.py dominio    # só os casos com "dominio" na pergunta
+python ferramentas/testar.py --ver      # mostra a resposta inteira de cada caso
 ```
 
-Roda os casos de `casos_de_teste.json` **contra o endpoint do plugin**, com o modelo real.
+Roda os casos de `ferramentas/casos_de_teste.json` **contra o endpoint do plugin**, com o modelo real.
 É a LivIA que o cliente encontra: com a trava, o prompt anti-injeção e os limites no
 caminho. Gasta cota e leva alguns minutos.
 
@@ -402,7 +417,7 @@ mais caro: passar para o cliente um contato, um preço ou um link que não exist
 
 ### O que a trava do plugin pega a mais que a do protótipo
 
-| Regra | `livia.py` | `Livia_Trava` |
+| Regra | `ferramentas/livia.py` | `Livia_Trava` |
 |---|---|---|
 | Telefone fora da base | ✅ | ✅ com âncora, sem fatiar corrida longa de dígitos |
 | E-mail fora da base | ✅ | ✅ |
@@ -632,8 +647,8 @@ informação na base, ou a base induziu o erro.
 - **Tokens por dia subindo** → é o aviso antecipado de que o teto diário vai apertar,
   em vez de descobrir no susto às onze da manhã.
 
-Ao adicionar algo na base, **adicione também um caso em `casos_de_teste.json`** e rode
-`testar.py`. É assim que a correção de hoje não volta como defeito daqui a três meses.
+Ao adicionar algo na base, **adicione também um caso em `ferramentas/casos_de_teste.json`** e
+rode `ferramentas/testar.py`. É assim que a correção de hoje não volta como defeito daqui a três meses.
 
 ---
 
@@ -701,7 +716,7 @@ https://ai.google.dev/gemini-api/docs/rate-limits.
 
 Acompanhe os tokens no painel (*Configurações → LivIA*).
 
-`testar.py` gasta uma chamada por caso e se auto-limita a 15 por minuto (`RPM_LIMITE`, no
+`ferramentas/testar.py` gasta uma chamada por caso e se auto-limita a 15 por minuto (`RPM_LIMITE`, no
 topo do arquivo) para não bater no teto. Uma bateria completa leva alguns minutos — é o
 preço de não tomar 429 no meio.
 
@@ -718,37 +733,24 @@ Limites atuais e o que muda no plano pago: https://ai.google.dev/pricing
 | `livia/includes/` | O núcleo: trava, cliente da API, sessão, limites, rotas, registro, atalhos, seleção de trechos e cadeia de modelos. |
 | `livia/admin/` | As duas telas do wp-admin: configuração e conversas. |
 | `livia/public/` | O widget: protocolo do streaming, ritmo humano e a janela flutuante. |
-| `livia/tests/` | A suíte offline e os stubs do WordPress. |
-| `casos_de_teste.json` | Os casos de comportamento, com o que cada resposta precisa (ou não pode) conter. |
-| `testar.py` | Roda a bateria de comportamento contra o endpoint. |
+| `livia/tests/` | A suíte offline e os stubs do WordPress. Fica fora do pacote. |
+| `local/` | O WordPress de mentira para rodar widget, rotas e painel sem instalar nada, e o gerador das capturas. |
+| `ferramentas/livia.py` | O protótipo de terminal. Continua útil para calibrar rápido. |
+| `ferramentas/testar.py` | Roda a bateria de comportamento contra o endpoint. |
+| `ferramentas/casos_de_teste.json` | Os casos de comportamento, com o que cada resposta precisa (ou não pode) conter. |
+| `docs/requisicoes-gemini.sh` | As requisições de referência à API, em cURL, para conferir chave e modelo à mão. |
+| `assets/livia/` | As capturas do README, geradas por `local/capturas.mjs` com dados fictícios. |
 | `empacotar.py` | Gera o `.zip` do plugin, sem os testes. |
 | `dist/` | O pacote gerado. Não versionado. |
-| `livia.py` | O protótipo de terminal. Continua útil para calibrar rápido. |
 | `.env` / `.env.example` | Chave, modelo, canal e URL de homologação. O `.env` não é versionado. |
 | `historico/` | Log do protótipo de terminal, um arquivo por dia. Não versionado. |
-| `VALIDAR-SECAO-7.md` | Checklist das afirmações de processo que precisam ser confirmadas. |
 
-A base mora **dentro do plugin**, e o `livia.py` lê ela de lá. Uma fonte só: o dia em que
-existirem duas cópias, elas divergem, e os `casos_de_teste.json` param de valer para as duas.
-
----
-
-## Antes do primeiro cliente real
-
-A seção 7 da base ("Outras dúvidas sobre o formulário") foi escrita a partir de **suposições
-razoáveis sobre o processo da Joinvix**, não de fonte confirmada: como o prazo de 72 horas
-conta, o que acontece quando falta material, o que a equipe ajusta depois.
-
-**Nenhuma das três camadas protege contra isso.** A trava só compara contato, valor e
-endereço; o teste só confere que a LivIA disse o que a base manda dizer. Se uma regra da
-seção 7 estiver errada, ela é repetida com toda a confiança, para todo cliente.
-
-O checklist está em **[VALIDAR-SECAO-7.md](../VALIDAR-SECAO-7.md)** — 16 afirmações ranqueadas
-por risco, para levar a quem toca o Site em 72h. Deve levar vinte minutos.
+A base mora **dentro do plugin**, e o protótipo lê ela de lá. Uma fonte só: o dia em que
+existirem duas cópias, elas divergem, e os casos de teste param de valer para as duas.
 
 ---
 
-## Checklist de go-live
+## Checklist de implantação
 
 Nenhum item aqui é opcional. Os que dependem de você estão marcados.
 
@@ -756,17 +758,17 @@ Nenhum item aqui é opcional. Os que dependem de você estão marcados.
 |---|---|---|
 | 👤 | Chave rotacionada, restrita à API Generative Language | Botão **Testar chave e modelo** na tela de configuração |
 | 👤 | Chave fora do banco | `define( 'LIVIA_GEMINI_API_KEY', ... )` no `wp-config.php` |
-| 👤 | Seção 7 da base confirmada com quem toca o Site em 72h | [VALIDAR-SECAO-7.md](../VALIDAR-SECAO-7.md) |
+| 👤 | Afirmações de processo da base conferidas com a equipe | Prazo, material e ajustes descritos como a equipe de fato trabalha |
 | ✅ | Suíte offline verde | `php livia/tests/rodar.php` |
 | ✅ | Base do PHP idêntica à do Python | `php livia/tests/paridade-base.php ref.txt "<canal>"` |
-| 👤 | Bateria de comportamento verde em homologação | `python testar.py` |
+| 👤 | Bateria de comportamento verde em homologação | `python ferramentas/testar.py` |
 | 👤 | Cabeçalho de IP declarado, se houver proxy | `define( 'LIVIA_HEADER_IP', 'HTTP_CF_CONNECTING_IP' )` |
-| 👤 | `pm.max_children` dimensionado para o streaming | Ver *Riscos* abaixo |
+| 👤 | `pm.max_children` dimensionado para o streaming | Ver *Limitações conhecidas* abaixo |
 | 👤 | Streaming chegando aos poucos, não de uma vez | Abrir o widget e mandar uma pergunta |
 | 👤 | Expurgo diário agendado | Ativar o plugin agenda; conferir com WP Crontrol |
 | 👤 | Alguém da equipe sabe onde ver as respostas barradas | *Configurações → LivIA* |
 
-### Riscos que continuam de pé
+### Limitações conhecidas
 
 **Processos do PHP-FPM.** Cada resposta em streaming segura um processo pelos 10 a 25
 segundos inteiros. Numa hospedagem compartilhada com poucos processos, uma dúzia de
@@ -781,7 +783,6 @@ atendimento não chega a ser registrado.
 **Contadores não são atômicos.** Duas requisições no mesmo milissegundo podem contar como
 uma nos limites de ritmo. Erra por um, não por mil, e não vale um lock por mensagem.
 
-**A base cresce, o TPM aperta.** Ela vai inteira em toda pergunta: dobrar o tamanho dobra o
-gasto por resposta. Acompanhe os tokens no painel e ative o cache de contexto do Gemini
-quando o volume justificar — o conteúdo é idêntico em toda chamada, que é exatamente o caso
-de uso do cache.
+**A base cresce, o TPM aperta.** A seleção de trechos segura o gasto dentro de um orçamento
+fixo, mas o que vai sempre (identidade, guardrails, escalonamento) cresce junto com a base.
+Acompanhe os tokens no painel; o cache de contexto liga sozinho quando o movimento compensa.

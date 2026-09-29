@@ -7,13 +7,13 @@ Responde SOMENTE com o que está em base_conhecimento.md; fora disso, encaminha
 para o atendimento humano.
 
 Uso:
-    python livia.py          # atendimento
-    python testar.py         # bateria de testes automática
+    python ferramentas/livia.py          # atendimento
+    python ferramentas/testar.py         # bateria de testes automática
 
-Configuração — arquivo .env nesta pasta, ou variáveis de ambiente:
+Configuração — arquivo .env na raiz do projeto, ou variáveis de ambiente:
     GEMINI_API_KEY=sua-chave
     GEMINI_MODEL=gemini-3.5-flash-lite
-    CANAL_DE_SUPORTE=WhatsApp (47) 3433-5066
+    CANAL_DE_SUPORTE=WhatsApp (00) 0000-0000
 
 As funções deste arquivo (carregar_base, chamar_gemini, verificar_resposta) são
 o "miolo" da LivIA e não dependem do terminal — é o que será reaproveitado quando
@@ -29,7 +29,8 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+# O protótipo mora em ferramentas/, mas a base, o .env e o histórico são os da raiz.
+BASE_DIR = Path(__file__).resolve().parent.parent
 # A base mora dentro do plugin: uma fonte só, lida tanto pelo PHP quanto por aqui.
 ARQUIVO_CONHECIMENTO = BASE_DIR / "livia" / "conhecimento" / "base_conhecimento.md"
 PASTA_LOGS = BASE_DIR / "historico"
@@ -256,7 +257,7 @@ def main() -> int:
 
     if not api_key:
         print(f"{C.VERM}Falta configurar a GEMINI_API_KEY.{C.RESET}")
-        print("Crie um arquivo .env nesta pasta com a linha:  GEMINI_API_KEY=sua-chave")
+        print("Crie um arquivo .env na raiz do projeto com a linha:  GEMINI_API_KEY=sua-chave")
         return 1
     if not ARQUIVO_CONHECIMENTO.exists():
         print(f"{C.VERM}Não encontrei a base de conhecimento:{C.RESET} {ARQUIVO_CONHECIMENTO}")

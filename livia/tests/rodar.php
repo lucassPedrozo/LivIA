@@ -84,9 +84,9 @@ foreach ( $fabrica( $base ) as $caso ) {
 }
 
 $casos = array_merge( $casos, require __DIR__ . '/casos-gemini.php' );
-$casos = array_merge( $casos, require __DIR__ . '/casos-fase3.php' );
-$casos = array_merge( $casos, require __DIR__ . '/casos-fase4.php' );
-$casos = array_merge( $casos, require __DIR__ . '/casos-fase5.php' );
+$casos = array_merge( $casos, require __DIR__ . '/casos-endpoint.php' );
+$casos = array_merge( $casos, require __DIR__ . '/casos-streaming.php' );
+$casos = array_merge( $casos, require __DIR__ . '/casos-privacidade.php' );
 $casos = array_merge( $casos, require __DIR__ . '/casos-operacao.php' );
 $casos = array_merge( $casos, require __DIR__ . '/casos-registro.php' );
 $casos = array_merge( $casos, require __DIR__ . '/casos-motor.php' );

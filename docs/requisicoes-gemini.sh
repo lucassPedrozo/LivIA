@@ -7,7 +7,7 @@
 
 
 # ---------------------------------------------------------------- 1. chamada simples
-# Usada por chamar_gemini() em livia.py.
+# Usada por Livia_Gemini::gerar() no plugin e por chamar_gemini() em ferramentas/livia.py.
 
 curl "https://generativelanguage.googleapis.com/v1beta/models/$GEMINI_MODEL:generateContent" \
   -H 'Content-Type: application/json' \
@@ -22,7 +22,7 @@ curl "https://generativelanguage.googleapis.com/v1beta/models/$GEMINI_MODEL:gene
 
 
 # ---------------------------------------------------------------- 2. streaming (SSE)
-# É esta que a Fase 4 do plano consome via cURL com CURLOPT_WRITEFUNCTION.
+# É a que Livia_Gemini::gerar_stream() consome via cURL com CURLOPT_WRITEFUNCTION.
 # Repare no ?alt=sse: sem ele a API devolve um array JSON, não eventos.
 
 curl -N "https://generativelanguage.googleapis.com/v1beta/models/$GEMINI_MODEL:streamGenerateContent?alt=sse" \
@@ -39,7 +39,7 @@ curl -N "https://generativelanguage.googleapis.com/v1beta/models/$GEMINI_MODEL:s
 
 # ---------------------------------------------------------------- 3. o modelo existe?
 # Confere se o ID em GEMINI_MODEL é válido para esta chave. Um ID errado vira 404
-# em toda resposta, para todo cliente. A Fase 1 roda esta checagem na ativação.
+# em toda resposta, para todo cliente. O botão "Testar chave e modelo" da configuração faz esta checagem.
 
 curl "https://generativelanguage.googleapis.com/v1beta/models/$GEMINI_MODEL" \
   -H "X-goog-api-key: $GEMINI_API_KEY"

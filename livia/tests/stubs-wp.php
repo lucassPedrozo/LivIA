@@ -174,7 +174,7 @@ function delete_transient( $nome ) {
 }
 
 // --- hooks de mentira, mas de verdade -------------------------------------
-// Filtro e ação chegaram a valer nos testes a partir da Fase 3: é assim que o
+// Filtro e ação valem de verdade nos testes: é assim que o
 // caso substitui a chamada real ao Gemini por uma resposta de laboratório.
 
 $GLOBALS['_stub_hooks'] = array();

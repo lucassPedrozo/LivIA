@@ -34,8 +34,20 @@ Cada pergunta leva só o pedaço da base que ela pede: identidade, guardrails e 
 |-- .github/
 |   `-- workflows/
 |       `-- testes.yml
+|-- assets/
+|   `-- livia/
+|       |-- img1.png
+|       |-- img2.png
+|       |-- img3.png
+|       |-- img4.png
+|       `-- img5.png
 |-- docs/
-|   `-- GUIA-TECNICO.md
+|   |-- GUIA-TECNICO.md
+|   `-- requisicoes-gemini.sh
+|-- ferramentas/
+|   |-- casos_de_teste.json
+|   |-- livia.py
+|   `-- testar.py
 |-- livia/
 |   |-- admin/
 |   |   |-- class-livia-admin.php
@@ -74,19 +86,26 @@ Cada pergunta leva só o pedaço da base que ela pede: identidade, guardrails e 
 |   |   `-- stubs-wp.php
 |   |-- livia.php
 |   `-- uninstall.php
+|-- local/
+|   |-- wp-admin/
+|   |-- capturas.mjs
+|   |-- configurar.php
+|   |-- respostas.php
+|   |-- semear.php
+|   |-- servidor.php
+|   |-- tela-admin.php
+|   |-- tela-briefing.css
+|   |-- tela-briefing.php
+|   |-- wp-admin.css
+|   `-- wp-falso.php
 |-- .env.example
-|-- casos_de_teste.json
-|-- CURL - Gemini.txt
 |-- empacotar.py
-|-- livia.py
-|-- testar.py
-|-- VALIDAR-SECAO-7.md
 `-- README.md
 ```
 
 ## Como executar
 
-Requisitos: PHP 7.4 ou superior para rodar e testar, Python 3 para empacotar e para a bateria de comportamento, e uma chave da API do Gemini para ver a LivIA respondendo de verdade. A chave sai do `.env`, criado a partir do `.env.example`, que nunca é versionado.
+Requisitos: PHP 7.4 ou superior (com `pdo_sqlite` para o ambiente local), Python 3 para empacotar e para a bateria de comportamento, e uma chave da API do Gemini para ver a LivIA respondendo com o modelo de verdade. Sem chave, o ambiente local responde com textos de laboratório que passam pela mesma trava e pelo mesmo registro. A chave sai do `.env`, criado a partir do `.env.example`, que nunca é versionado.
 
 Para rodar a suíte offline, que não precisa de nada instalado:
 
@@ -94,7 +113,25 @@ Para rodar a suíte offline, que não precisa de nada instalado:
 php livia/tests/rodar.php
 ```
 
-Para instalar no WordPress durante o desenvolvimento, aponte a pasta `livia/` para `wp-content/plugins/` (um link simbólico é o mais prático), ative em *Plugins* e configure em *Configurações → LivIA*. Depois, coloque o widget numa página:
+Para subir o widget, as rotas e o painel sem WordPress nenhum:
+
+```bash
+php -S localhost:8765 local/servidor.php
+```
+
+Depois abra `http://localhost:8765/` para a página de briefing com o widget e `/wp-admin/options-general.php?page=livia` para o painel. Para encher o painel com duas semanas de conversas fictícias:
+
+```bash
+php local/semear.php
+```
+
+Com o servidor no ar, as capturas deste README são regeradas pelo Chrome em modo headless, sem nenhuma dependência para instalar:
+
+```bash
+node local/capturas.mjs
+```
+
+Para instalar no WordPress, aponte a pasta `livia/` para `wp-content/plugins/`, ative em *Plugins*, configure em *Configurações → LivIA* e coloque o shortcode numa página:
 
 ```text
 [livia formulario="site-em-72h"]
@@ -109,13 +146,7 @@ define( 'LIVIA_GEMINI_API_KEY', 'sua-chave' );
 Para rodar a bateria de comportamento contra uma homologação com o plugin instalado (gasta cota; nunca aponte para produção):
 
 ```bash
-python testar.py
-```
-
-Para calibrar uma resposta rápido no terminal, sem subir WordPress:
-
-```bash
-python livia.py
+python ferramentas/testar.py
 ```
 
 Para gerar o `.zip` que se instala no WordPress:
@@ -124,9 +155,9 @@ Para gerar o `.zip` que se instala no WordPress:
 python empacotar.py
 ```
 
-O empacotamento recusa a suíte vermelha e deixa `livia/tests/` de fora. O pacote sai em `dist/`, que não é versionado.
+O empacotamento recusa a suíte vermelha e leva só a pasta `livia/`, sem os testes. O pacote sai em `dist/`, que não é versionado.
 
-A arquitetura, as rotas, os limites e o motivo de cada número, o monitoramento, o painel, o custo da API e o checklist de go-live estão em [`docs/GUIA-TECNICO.md`](docs/GUIA-TECNICO.md).
+A arquitetura, as rotas, os limites e o motivo de cada número, o monitoramento, o painel, o custo da API e o checklist de implantação estão em [`docs/GUIA-TECNICO.md`](docs/GUIA-TECNICO.md).
 
 ## Stacks
 
@@ -136,6 +167,8 @@ A arquitetura, as rotas, os limites e o motivo de cada número, o monitoramento,
 - CSS (sem framework)
 - API do Gemini (streaming SSE e cache de contexto)
 - Python 3
+- SQLite (ambiente local)
+- Node.js e Chrome headless (capturas)
 - GitHub Actions
 - Markdown como base de conhecimento
 
@@ -168,3 +201,13 @@ A arquitetura, as rotas, os limites e o motivo de cada número, o monitoramento,
 - CSS
 - API do Gemini
 - Python
+
+**Imagens:**
+
+- `assets/livia/img1.png` — o painel da conversa aberto sobre o formulário, com a página ao fundo escurecida e as respostas em parágrafos curtos.
+- `assets/livia/img2.png` — a mesma conversa no celular, em tela cheia, com as perguntas de partida coladas no campo.
+- `assets/livia/img3.png` — a aba de conversas do painel, com o selo de cada problema: resposta lenta, barrada pela trava ou marcada como não útil.
+- `assets/livia/img4.png` — o que não funcionou agrupado por pergunta, o movimento dos últimos 14 dias e de onde vêm as perguntas.
+- `assets/livia/img5.png` — a configuração: situação, cota do dia, modelo principal e reserva, e o estado do cache de contexto.
+
+As capturas foram geradas no ambiente local (`local/`), com respostas de laboratório e conversas fictícias (a cliente Marina, da Padaria Aurora, num estúdio de exemplo), sem nenhuma chave, nenhum contato real e nenhuma conversa de cliente.

@@ -1,0 +1,127 @@
+/* Imitação mínima do wp-admin, para o painel da LivIA ser visto em contexto. */
+
+* { box-sizing: border-box; }
+
+body.wp-admin {
+	margin: 0;
+	background: #f0f0f1;
+	color: #1d2327;
+	font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+#wpadminbar {
+	position: fixed;
+	inset: 0 0 auto 0;
+	height: 32px;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 12px;
+	background: #1d2327;
+	color: #f0f0f1;
+}
+.wp-logo {
+	display: inline-grid;
+	place-items: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: #f0f0f1;
+	color: #1d2327;
+	font-weight: 700;
+	font-size: 12px;
+}
+
+#adminmenu {
+	position: fixed;
+	top: 32px;
+	bottom: 0;
+	left: 0;
+	width: 160px;
+	padding-top: 12px;
+	background: #1d2327;
+}
+#adminmenu a {
+	display: block;
+	padding: 8px 12px;
+	color: #f0f0f1;
+	font-size: 14px;
+}
+#adminmenu > a.atual { background: #2271b1; color: #fff; }
+#adminmenu .submenu { background: #2c3338; padding: 6px 0; }
+#adminmenu .submenu a { padding: 5px 12px; font-size: 13px; color: #c3c4c7; }
+#adminmenu .submenu a.atual { color: #fff; font-weight: 600; }
+
+#wpcontent { margin-left: 160px; padding: 32px 20px 40px; }
+
+.wrap { margin: 10px 20px 0 2px; }
+.wrap h1 { font-size: 23px; font-weight: 400; margin: 0; padding: 9px 0 4px; line-height: 1.3; }
+h2 { font-size: 1.3em; margin: 1em 0; }
+a { color: #2271b1; }
+
+.button, .button-primary, button, input[type=submit] {
+	display: inline-block;
+	min-height: 30px;
+	padding: 0 10px;
+	border: 1px solid #2271b1;
+	border-radius: 3px;
+	background: #f6f7f7;
+	color: #2271b1;
+	font: inherit;
+	line-height: 2.15384615;
+	text-decoration: none;
+	cursor: pointer;
+}
+.button-primary { background: #2271b1; color: #fff; }
+
+input[type=text], input[type=password], input[type=search], input[type=number], input[type=email], select, textarea {
+	padding: 0 8px;
+	min-height: 30px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+	color: #2c3338;
+	font: inherit;
+}
+textarea { padding: 6px 8px; }
+.regular-text { width: 25em; max-width: 100%; }
+.large-text { width: 99%; }
+.description { color: #646970; font-size: 13px; }
+
+.nav-tab-wrapper { border-bottom: 1px solid #c3c4c7; margin: 0; padding-top: 9px; }
+.nav-tab {
+	display: inline-block;
+	margin-left: .5em;
+	padding: 5px 10px;
+	border: 1px solid #c3c4c7;
+	border-bottom: 0;
+	background: #dcdcde;
+	color: #50575e;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.71428571;
+	text-decoration: none;
+}
+.nav-tab-active { background: #f0f0f1; color: #000; margin-bottom: -1px; border-bottom: 1px solid #f0f0f1; }
+
+.form-table { width: 100%; border-collapse: collapse; margin-top: .5em; }
+.form-table th { width: 200px; padding: 20px 10px 20px 0; text-align: left; vertical-align: top; font-weight: 600; }
+.form-table td { padding: 15px 10px; }
+
+.widefat { width: 100%; border: 1px solid #c3c4c7; border-spacing: 0; background: #fff; }
+.widefat th, .widefat td { padding: 8px 10px; text-align: left; vertical-align: top; }
+.widefat thead th { border-bottom: 1px solid #c3c4c7; font-weight: 400; }
+.striped > tbody > :nth-child(odd) { background: #f6f7f7; }
+
+.notice { background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #72aee6; padding: 1px 12px; margin: 5px 0 15px; }
+.notice-success { border-left-color: #00a32a; }
+.notice-warning { border-left-color: #dba617; }
+.notice-error { border-left-color: #d63638; }
+
+@media (max-width: 782px) {
+	#adminmenu { display: none; }
+	#wpcontent { margin-left: 0; padding: 46px 10px 30px; }
+	#wpadminbar { height: 46px; }
+	.form-table th, .form-table td { display: block; width: auto; padding: 8px 0; }
+}
