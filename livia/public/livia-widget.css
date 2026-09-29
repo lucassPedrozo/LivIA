@@ -1,0 +1,1080 @@
+/**
+ * O widget da LivIA.
+ *
+ * Tudo aqui é prefixado com .livia- e nada usa seletor de elemento solto: isto
+ * roda dentro do tema de vocês, e um `button { }` daqui quebraria o site.
+ *
+ * ## Por que toda regra começa com .livia-raiz
+ *
+ * O contrário também é verdade: o tema quebra o widget. O Elementor imprime
+ * `.elementor-kit-614 button { padding: 20px 36px; border-radius: 30px;
+ * background: <cor do site>; font-size: 16px }` — e isso vale 0-1-1 de
+ * especificidade, enquanto `.livia-fechar` vale 0-1-0. O tema ganhava de TODOS
+ * os botões daqui: o X do cabeçalho virava um retângulo azul de 72x40, o botão
+ * de enviar virava uma pílula cinza e as sugestões inchavam para 61px de alto.
+ *
+ * Com `.livia-raiz` na frente, toda regra passa a valer 0-2-0 e ganha de
+ * qualquer `.classe-do-tema elemento`. Não é enfeite: é o que faz o widget
+ * chegar inteiro em site de terceiro. Regra nova aqui nasce com o prefixo.
+ *
+ * A cor de destaque vem do painel, por uma variável no elemento raiz. Quem
+ * quiser ir além pode redefinir qualquer uma das variáveis abaixo no CSS do
+ * tema, sem tocar neste arquivo.
+ */
+
+.livia-raiz {
+	--livia-cor: #1f5f8b;
+	--livia-cor-texto: #ffffff;
+
+	--livia-fundo: #ffffff;
+	--livia-tinta: #16202a;
+	--livia-tinta-media: #5b6875;
+	--livia-tinta-fraca: #8e9aa6;
+	--livia-linha: #e7ebef;
+	--livia-balao-dela: #f2f4f7;
+
+	/* Sombra em camadas: uma rasa que cola o elemento na página e uma larga e
+	   fraca que dá a altura. Uma sombra só, grande, sai borrada. */
+	--livia-sombra:
+		0 1px 2px rgba(16, 30, 45, .06),
+		0 8px 24px rgba(16, 30, 45, .12),
+		0 24px 48px rgba(16, 30, 45, .08);
+
+	--livia-raio: 14px;
+
+	/* Inter primeiro porque é a face mais comum instalada em máquina de
+	   trabalho e tem números de largura fixa; depois a do sistema. Nenhuma
+	   é baixada: uma requisição a um servidor de fontes atrasaria a página do
+	   cliente e mandaria o IP dele para fora, sem necessidade nenhuma. */
+	--livia-fonte: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text",
+		"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+	position: fixed;
+	left: 24px;
+	bottom: 24px;
+	z-index: 99999;
+	font-family: var(--livia-fonte);
+	font-size: 14px;
+	font-weight: 400;
+	font-style: normal;
+	line-height: 1.5;
+	color: var(--livia-tinta);
+	text-align: left;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -.003em;
+
+	/* O container não intercepta clique; só os filhos visíveis interceptam. */
+	pointer-events: none;
+}
+
+.livia-raiz * {
+	box-sizing: border-box;
+}
+
+/**
+ * Reset de território.
+ *
+ * Só para botão e campo, que é onde o tema mais bate. `[class]` casa com todos
+ * os nossos — todos têm classe — e vale uma classe de especificidade, enquanto
+ * `:where()` não vale nada: o conjunto dá 0-2-0, o mesmo das regras de
+ * componente lá embaixo. Empate se resolve pela ordem, e como este bloco vem
+ * primeiro, o componente ganha. Do tema, ganham os dois.
+ *
+ * O que está aqui é o que os componentes NÃO declaram: se o tema manda
+ * `font-family: "Plus Jakarta Sans"` num botão, `font: inherit` devolve a fonte
+ * do widget sem que cada botão precise repetir a linha.
+ */
+.livia-raiz :where(button, input, textarea)[class] {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	box-shadow: none;
+	text-shadow: none;
+	text-decoration: none;
+	text-transform: none;
+	font: inherit;
+	letter-spacing: inherit;
+	color: inherit;
+	width: auto;
+	min-width: 0;
+	max-width: none;
+	height: auto;
+	min-height: 0;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+/**
+ * O `display: none` que o navegador dá a [hidden] tem a mesma especificidade
+ * que qualquer classe daqui — e perde para ela por vir antes. Sem esta linha, a
+ * janela nasce aberta na cara de quem só queria preencher o formulário.
+ */
+.livia-raiz [hidden] {
+	display: none !important;
+}
+
+/* ------------------------------------------------------------------ bolha */
+
+/**
+ * O botão que abre a conversa: pílula com ícone e rótulo.
+ *
+ * Era um círculo de 56px só com o balãozinho. Ícone de chat significa "chat"
+ * para quem já usa chat — e quem está preenchendo um briefing pela primeira vez
+ * não é essa pessoa. Com "Dúvidas?" escrito, o botão diz o que faz sem exigir
+ * que ninguém decifre desenho.
+ *
+ * O rótulo sai da configuração, não daqui: este plugin não atende só a JoinVix.
+ */
+.livia-raiz .livia-bolha {
+	pointer-events: auto;
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	min-width: 52px;
+	height: 52px;
+	padding: 0 22px 0 19px;
+	border: 0;
+	border-radius: 999px;
+	font: inherit;
+	font-size: 14.5px;
+	font-weight: 600;
+	letter-spacing: -.005em;
+	white-space: nowrap;
+
+	/* A cor chapada vem ANTES do degradê de propósito. O Elementor tem uma
+	   regra de carregamento preguiçoso que apaga `background-image` com
+	   !important dentro de container dele; sem uma cor sólida embaixo, o botão
+	   ficaria transparente. Com ela, o pior caso é perder só o volume. */
+	background-color: var(--livia-cor);
+	background-image:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--livia-cor) 88%, #ffffff) 0%,
+			var(--livia-cor) 100%
+		);
+	color: var(--livia-cor-texto);
+	cursor: pointer;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, .16),
+		0 2px 6px rgba(16, 30, 45, .18),
+		0 10px 24px rgba(16, 30, 45, .16);
+	transition: transform .16s ease, box-shadow .16s ease;
+}
+
+/* Sem rótulo configurado ele volta a ser redondo, e continua certo. */
+.livia-raiz .livia-bolha:not(:has(.livia-rotulo)) {
+	width: 56px;
+	height: 56px;
+	padding: 0;
+	gap: 0;
+}
+
+.livia-raiz .livia-bolha:hover {
+	transform: translateY(-1px);
+	box-shadow:
+		0 3px 8px rgba(16, 30, 45, .2),
+		0 14px 30px rgba(16, 30, 45, .2);
+}
+
+.livia-raiz .livia-bolha:active {
+	transform: translateY(0);
+}
+
+.livia-raiz .livia-bolha svg {
+	width: 21px;
+	height: 21px;
+	display: block;
+	flex: none;
+	fill: currentColor;
+}
+
+.livia-raiz .livia-rotulo {
+	display: block;
+	line-height: 1;
+	/* O rótulo é texto de interface, não de leitura: o ajuste ótico do
+	   .livia-raiz deixaria as letras apertadas neste tamanho e peso. */
+	letter-spacing: 0;
+}
+
+/* Os dois ícones sobrepostos: a troca não mexe no tamanho do botão. */
+.livia-raiz .livia-bolha .livia-icone-fechar { display: none; }
+.livia-raiz.livia-aberta .livia-bolha .livia-icone-chat { display: none; }
+.livia-raiz.livia-aberta .livia-bolha .livia-icone-fechar { display: block; }
+
+/**
+ * Pontinho de "tem gente do outro lado".
+ *
+ * Numa pílula ele não pode morar no canto de cima à direita: ali cai no meio do
+ * arredondamento e fica cortado pela metade. Fica sobre o ícone, que é onde o
+ * olho já está quando lê o botão.
+ */
+.livia-raiz .livia-presenca {
+	position: absolute;
+	top: 8px;
+	left: 27px;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: #35c05a;
+	box-shadow: 0 0 0 2.5px color-mix(in srgb, var(--livia-cor) 94%, #000000);
+}
+
+/* Sem rótulo o botão volta a ser redondo, e o pontinho volta para o canto. */
+.livia-raiz .livia-bolha:not(:has(.livia-rotulo)) .livia-presenca {
+	top: 4px;
+	left: auto;
+	right: 4px;
+}
+
+/* ---------------------------------------------------------------- convite */
+
+.livia-raiz .livia-convite {
+	pointer-events: auto;
+	position: absolute;
+	left: 2px;
+	bottom: 70px;
+	width: 244px;
+	padding: 13px 34px 13px 15px;
+	background: var(--livia-fundo);
+	border: 1px solid var(--livia-linha);
+	border-radius: 14px 14px 14px 4px;
+	box-shadow: var(--livia-sombra);
+	font-size: 13.5px;
+	line-height: 1.45;
+	color: var(--livia-tinta-media);
+	cursor: pointer;
+	animation: livia-sobe .3s cubic-bezier(.2, .8, .3, 1) both;
+}
+
+.livia-raiz .livia-convite:hover {
+	border-color: #d6dde4;
+}
+
+.livia-raiz .livia-convite-x {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--livia-tinta-fraca);
+	font-size: 15px;
+	line-height: 1;
+	cursor: pointer;
+	border-radius: 6px;
+}
+
+.livia-raiz .livia-convite-x:hover {
+	background: var(--livia-balao-dela);
+	color: var(--livia-tinta-media);
+}
+
+@keyframes livia-sobe {
+	from { opacity: 0; transform: translateY(6px); }
+	to   { opacity: 1; transform: translateY(0); }
+}
+
+/* -------------------------------------------------------------------- véu */
+
+/**
+ * A camada que escurece a página enquanto a conversa está aberta.
+ *
+ * Faz três coisas de uma vez: separa o painel do formulário que ficou atrás,
+ * diz sem palavras que a conversa é o assunto do momento, e recebe o clique de
+ * quem quer sair — clicou fora, fechou. É por isso que é um elemento de
+ * verdade e não um ::before: precisa de ouvinte de clique.
+ *
+ * O desfoque é de 2px, e é proposital que seja quase imperceptível: serve para
+ * tirar a nitidez do texto de trás, para o olho parar de tentar lê-lo. Não
+ * para esconder a página.
+ */
+.livia-raiz .livia-veu {
+	pointer-events: auto;
+	position: fixed;
+	inset: 0;
+	background: rgba(12, 22, 33, .42);
+	-webkit-backdrop-filter: blur(2px);
+	backdrop-filter: blur(2px);
+	cursor: pointer;
+	animation: livia-surge .22s ease both;
+}
+
+@keyframes livia-surge {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- janela */
+
+/**
+ * Painel lateral, colado na borda esquerda, do topo ao rodapé.
+ *
+ * Era uma janela flutuante de 384x564 com cantos arredondados. O painel de
+ * altura inteira ganha duas coisas: a conversa deixa de ser uma janelinha
+ * sobreposta ao formulário e passa a ser uma coluna ao lado dele — que é o que
+ * ela é —, e a resposta de três parágrafos cabe sem rolagem.
+ *
+ * `position: fixed` e não `absolute`: a raiz é uma âncora de 0px no canto, e
+ * altura inteira precisa de referência na janela do navegador, não nela.
+ *
+ * Vem depois do véu no HTML de propósito: mesma pilha, e quem vem depois fica
+ * por cima. Um z-index aqui seria uma segunda fonte de verdade.
+ */
+.livia-raiz .livia-janela {
+	pointer-events: auto;
+	position: fixed;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	width: 400px;
+	max-width: 100vw;
+	background: var(--livia-fundo);
+	border-radius: 0;
+	box-shadow: var(--livia-sombra);
+	overflow: hidden;
+	animation: livia-abre .22s cubic-bezier(.2, .8, .3, 1) both;
+}
+
+/* Entra deslizando da borda de onde vive, não crescendo do nada. */
+@keyframes livia-abre {
+	from { opacity: 0; transform: translateX(-16px); }
+	to   { opacity: 1; transform: translateX(0); }
+}
+
+/**
+ * A barra do admin do WordPress.
+ *
+ * Ela é fixa no topo e some por cima de qualquer coisa em `top: 0` — e quem
+ * mais abre o site logado é justamente quem instalou o plugin, que veria o
+ * cabeçalho do painel cortado e concluiria que está quebrado. São 32px, 46px
+ * abaixo de 783 de largura; os números são do core, não inventados aqui.
+ */
+body.admin-bar .livia-raiz .livia-janela {
+	top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+	body.admin-bar .livia-raiz .livia-janela {
+		top: 46px;
+	}
+}
+
+/* Com o painel ocupando a lateral inteira, a pílula ficaria por baixo dele. */
+.livia-raiz.livia-aberta .livia-bolha,
+.livia-raiz.livia-aberta .livia-convite {
+	display: none;
+}
+
+/* ------------------------------------------------------------- cabeçalho */
+
+.livia-raiz .livia-topo {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	padding: 13px 14px 13px 16px;
+	color: var(--livia-cor-texto);
+	flex: none;
+
+	/* Um degradê de 6% e um fio claro no topo. Chapado, o cabeçalho vira um
+	   retângulo de tinta; com isso ele ganha a espessura de uma barra. A cor
+	   sólida embaixo é a mesma garantia da bolha: tema que apaga
+	   `background-image` com !important não deixa o cabeçalho transparente. */
+	background-color: var(--livia-cor);
+	background-image:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--livia-cor) 92%, #ffffff) 0%,
+			var(--livia-cor) 100%
+		);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, .12),
+		0 1px 0 rgba(16, 30, 45, .06);
+	position: relative;
+	z-index: 1;
+}
+
+.livia-raiz .livia-avatar {
+	flex: none;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .16);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.livia-raiz .livia-quem {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+
+.livia-raiz .livia-nome {
+	font-weight: 600;
+	font-size: 14.5px;
+	line-height: 1.2;
+	letter-spacing: -.01em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.livia-raiz .livia-estado {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 11.5px;
+	line-height: 1.3;
+	opacity: .82;
+}
+
+.livia-raiz .livia-estado i {
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #6fe092;
+}
+
+.livia-raiz .livia-fechar {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: inherit;
+	cursor: pointer;
+	opacity: .75;
+	transition: background .14s ease, opacity .14s ease;
+}
+
+.livia-raiz .livia-fechar svg {
+	width: 13px;
+	height: 13px;
+	fill: currentColor;
+}
+
+.livia-raiz .livia-fechar:hover {
+	background: rgba(255, 255, 255, .15);
+	opacity: 1;
+}
+
+/* -------------------------------------------------------------- conversa */
+
+.livia-raiz .livia-conversa {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 18px 16px 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	background: var(--livia-fundo);
+
+	/* A barra de rolagem cinza e grossa do sistema é o detalhe que mais faz um
+	   widget parecer improvisado. */
+	scrollbar-width: thin;
+	scrollbar-color: #cfd6dd transparent;
+}
+
+.livia-raiz .livia-conversa::-webkit-scrollbar {
+	width: 10px;
+}
+
+.livia-raiz .livia-conversa::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.livia-raiz .livia-conversa::-webkit-scrollbar-thumb {
+	background: #d3d9e0;
+	border-radius: 10px;
+	border: 3px solid var(--livia-fundo);
+}
+
+.livia-raiz .livia-conversa::-webkit-scrollbar-thumb:hover {
+	background: #b9c2cc;
+}
+
+.livia-raiz .livia-linha {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	max-width: 100%;
+	animation: livia-sobe .2s ease both;
+}
+
+.livia-raiz .livia-linha.livia-de-cliente {
+	flex-direction: row-reverse;
+}
+
+/* Espaço entre falas de pessoas diferentes; falas seguidas da mesma pessoa
+   ficam agrupadas, como em qualquer mensageiro. */
+.livia-raiz .livia-linha + .livia-linha.livia-vira {
+	margin-top: 12px;
+}
+
+.livia-raiz .livia-mini {
+	flex: none;
+	width: 26px;
+	height: 26px;
+	margin-top: 1px;
+	border-radius: 50%;
+	background: var(--livia-cor);
+	color: var(--livia-cor-texto);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+/* Invisível, mas ocupa o lugar: mantém os balões alinhados quando a mesma
+   pessoa fala duas vezes seguidas. */
+.livia-raiz .livia-mini.livia-oculto {
+	visibility: hidden;
+}
+
+/**
+ * A coluna balão + horário.
+ *
+ * O horário fica FORA do balão. Dentro, uma resposta longa terminava com um
+ * número solto embaixo do texto, e era um dos detalhes que faziam a conversa
+ * parecer um formulário em vez de um chat.
+ */
+.livia-raiz .livia-col {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-width: 0;
+	max-width: 84%;
+}
+
+.livia-raiz .livia-de-cliente .livia-col {
+	align-items: flex-end;
+}
+
+.livia-raiz .livia-balao {
+	max-width: 100%;
+	padding: 10px 13px;
+	border-radius: var(--livia-raio);
+	border-top-left-radius: 5px;
+	background: var(--livia-balao-dela);
+	color: var(--livia-tinta);
+	overflow-wrap: anywhere;
+}
+
+.livia-raiz .livia-de-cliente .livia-balao {
+	background: var(--livia-cor);
+	color: var(--livia-cor-texto);
+	border-top-left-radius: var(--livia-raio);
+	border-top-right-radius: 5px;
+}
+
+/* Só o primeiro balão de um grupo tem o canto cortado; os seguintes ficam
+   arredondados por igual, que é o que dá à coluna uma borda só. */
+.livia-raiz .livia-linha:not(.livia-vira) .livia-balao {
+	border-top-left-radius: var(--livia-raio);
+	border-top-right-radius: var(--livia-raio);
+}
+
+/* Parágrafos de verdade dentro do balão. Era isto que faltava: sem espaço
+   entre as ideias, uma resposta de seis linhas vira um muro de texto. */
+.livia-raiz .livia-balao p {
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+.livia-raiz .livia-balao p + p {
+	margin-top: .7em;
+}
+
+.livia-raiz .livia-hora {
+	margin: 4px 2px 0;
+	font-size: 10.5px;
+	line-height: 1;
+	color: var(--livia-tinta-fraca);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------- cursor e sugestões */
+
+/**
+ * O cursor que pisca no fim do texto enquanto ela escreve.
+ *
+ * É um pseudo-elemento em linha: acompanha a última palavra sozinho, sem
+ * precisar de um nó extra no DOM nem de medir nada.
+ */
+.livia-raiz .livia-balao.livia-escrevendo p:last-child::after {
+	content: "";
+	display: inline-block;
+	width: 2px;
+	height: 1.05em;
+	margin-left: 2px;
+	vertical-align: -.18em;
+	background: currentColor;
+	opacity: .55;
+	animation: livia-cursor 1.05s steps(1) infinite;
+}
+
+@keyframes livia-cursor {
+	0%, 49%   { opacity: .6; }
+	50%, 100% { opacity: 0; }
+}
+
+/**
+ * As perguntas de partida.
+ *
+ * Alinhadas à esquerda, como a fala dela — são sugestões da LivIA, não do
+ * cliente, e alinhar à direita faria parecer que ele já perguntou.
+ */
+.livia-raiz .livia-sugestoes {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 10px 0 2px 34px;
+	animation: livia-sobe .26s ease both;
+}
+
+/**
+ * As perguntas de partida, preenchidas e coladas no campo.
+ *
+ * Contornadas e claras, elas competiam com os balões da conversa pelo mesmo
+ * peso visual. Preenchidas, param de parecer mensagem e passam a parecer o que
+ * são: coisas em que dá para tocar.
+ */
+.livia-raiz .livia-sugestao {
+	padding: 8px 14px;
+	border: 0;
+	border-radius: 999px;
+	background: var(--livia-cor);
+	color: var(--livia-cor-texto);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.3;
+	text-align: left;
+	cursor: pointer;
+	transition: background .13s ease, transform .1s ease;
+}
+
+.livia-raiz .livia-sugestao:hover {
+	background: color-mix(in srgb, var(--livia-cor) 86%, #000000);
+}
+
+.livia-raiz .livia-sugestao:active {
+	transform: scale(.97);
+}
+
+/* A faixa que segura os chips, dentro do rodapé e fora da rolagem. */
+.livia-raiz .livia-sugestoes-area:empty {
+	display: none;
+}
+
+.livia-raiz .livia-sugestoes-area .livia-sugestoes {
+	margin: 0;
+	padding: 12px 12px 2px;
+}
+
+/* -------------------------------------------------------------- opinião */
+
+/**
+ * "Isso ajudou?" embaixo de uma resposta dela.
+ *
+ * Discreto, mas presente. A primeira versão ficava invisível até o mouse
+ * chegar perto: some no celular, some para quem navega por teclado, e some
+ * para quem simplesmente não passa o mouse ali — ou seja, quase todo mundo.
+ * Um sinal que ninguém vê não é discrição, é um recurso que não existe.
+ *
+ * Então fica meio apagado e acende ao chegar perto. Aceso o tempo todo, dois
+ * ícones embaixo de cada resposta puxariam o olho para longe do texto e
+ * transformariam a conversa num formulário de avaliação.
+ */
+.livia-raiz .livia-opiniao {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	margin-top: 3px;
+	opacity: .5;
+	transition: opacity .15s ease;
+}
+
+.livia-raiz .livia-linha:hover .livia-opiniao,
+.livia-raiz .livia-opiniao:focus-within,
+.livia-raiz .livia-opiniao.livia-votou {
+	opacity: 1;
+}
+
+.livia-raiz .livia-polegar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 0;
+	border-radius: 7px;
+	background: none;
+	color: var(--livia-tinta-fraca);
+	cursor: pointer;
+	transition: background .13s ease, color .13s ease;
+}
+
+.livia-raiz .livia-polegar svg {
+	width: 15px;
+	height: 15px;
+	fill: currentColor;
+}
+
+.livia-raiz .livia-polegar:hover {
+	background: var(--livia-balao-dela);
+	color: var(--livia-tinta-media);
+}
+
+.livia-raiz .livia-opiniao.livia-votou .livia-polegar {
+	cursor: default;
+	pointer-events: none;
+}
+
+/* A escolhida fica; a outra some, em vez de ficar como um botão morto. */
+.livia-raiz .livia-opiniao.livia-votou .livia-polegar:not(.livia-escolhido) {
+	opacity: 0;
+}
+
+.livia-raiz .livia-polegar.livia-escolhido {
+	color: var(--livia-cor);
+	background: color-mix(in srgb, var(--livia-cor) 10%, #ffffff);
+}
+
+.livia-raiz .livia-obrigado {
+	font-size: 12px;
+	color: var(--livia-tinta-fraca);
+	margin-left: 2px;
+}
+
+/* ------------------------------------------------------ tentar de novo */
+
+.livia-raiz .livia-balao-erro {
+	background: color-mix(in srgb, #b32d2e 6%, var(--livia-balao-dela));
+	box-shadow: inset 2px 0 0 color-mix(in srgb, #b32d2e 45%, #ffffff);
+}
+
+.livia-raiz .livia-tentar {
+	align-self: flex-start;
+	margin-top: 6px;
+	padding: 6px 13px;
+	border: 1px solid color-mix(in srgb, var(--livia-cor) 32%, #ffffff);
+	border-radius: 16px;
+	background: var(--livia-fundo);
+	color: color-mix(in srgb, var(--livia-cor) 88%, #000000);
+	font: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background .13s ease, border-color .13s ease, transform .1s ease;
+}
+
+.livia-raiz .livia-tentar:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--livia-cor) 7%, #ffffff);
+	border-color: color-mix(in srgb, var(--livia-cor) 50%, #ffffff);
+}
+
+.livia-raiz .livia-tentar:active:not(:disabled) {
+	transform: scale(.97);
+}
+
+.livia-raiz .livia-tentar:disabled {
+	opacity: .55;
+	cursor: default;
+}
+
+/* ------------------------------------------------------------- digitando */
+
+.livia-raiz .livia-digitando {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	padding: 13px;
+	min-height: 40px;
+}
+
+.livia-raiz .livia-digitando span {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--livia-tinta-fraca);
+	animation: livia-pulo 1.3s infinite ease-in-out;
+}
+
+.livia-raiz .livia-digitando span:nth-child(2) { animation-delay: .16s; }
+.livia-raiz .livia-digitando span:nth-child(3) { animation-delay: .32s; }
+
+@keyframes livia-pulo {
+	0%, 62%, 100% { transform: translateY(0); opacity: .4; }
+	28%           { transform: translateY(-4px); opacity: .95; }
+}
+
+/* Recado do sistema, no meio da conversa: "ainda estou verificando". */
+.livia-raiz .livia-nota {
+	align-self: center;
+	max-width: 84%;
+	margin: 8px 0 2px;
+	font-size: 11.5px;
+	line-height: 1.4;
+	color: var(--livia-tinta-fraca);
+	text-align: center;
+}
+
+/* --------------------------------------------------------------- entrada */
+
+.livia-raiz .livia-pe {
+	flex: none;
+	border-top: 1px solid var(--livia-linha);
+	background: var(--livia-fundo);
+}
+
+.livia-raiz .livia-form {
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+	padding: 11px 12px 9px;
+}
+
+.livia-raiz .livia-campo {
+	flex: 1;
+	min-width: 0;
+	height: 38px;
+	max-height: 104px;
+	padding: 9px 14px;
+	border: 1px solid var(--livia-linha);
+	border-radius: 19px;
+	font: inherit;
+	font-size: 14px;
+	line-height: 1.43;
+	color: var(--livia-tinta);
+	background: #f7f9fb;
+	resize: none;
+
+	/* hidden, e não auto: com rows="1" o `auto` desenha as setinhas de rolagem
+	   dentro do campo antes mesmo de haver o que rolar — foi o que apareceu na
+	   primeira instalação. O JavaScript troca para auto quando o texto cresce. */
+	overflow-y: hidden;
+	transition: border-color .14s ease, background .14s ease, box-shadow .14s ease;
+}
+
+/* O Firefox apaga o placeholder por conta própria; sem `opacity: 1` a dica do
+   campo sai mais fraca lá do que em qualquer outro navegador. */
+.livia-raiz .livia-campo::placeholder {
+	color: var(--livia-tinta-fraca);
+	opacity: 1;
+}
+
+.livia-raiz .livia-campo:focus {
+	outline: none;
+	background: var(--livia-fundo);
+	border-color: color-mix(in srgb, var(--livia-cor) 45%, #ffffff);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--livia-cor) 12%, transparent);
+}
+
+.livia-raiz .livia-enviar {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 38px;
+	height: 38px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--livia-cor);
+	color: var(--livia-cor-texto);
+	cursor: pointer;
+	transition: background .14s ease, transform .1s ease;
+}
+
+.livia-raiz .livia-enviar svg {
+	width: 16px;
+	height: 16px;
+	fill: currentColor;
+	margin-left: 1px;
+}
+
+.livia-raiz .livia-enviar:not([disabled]):hover {
+	background: color-mix(in srgb, var(--livia-cor) 88%, #000000);
+}
+
+.livia-raiz .livia-enviar:not([disabled]):active {
+	transform: scale(.93);
+}
+
+/* Apagado, mas a seta continua branca: com o `color: inherit` do reset ela
+   herdaria a tinta escura do texto e viraria um ícone preto num disco cinza. */
+.livia-raiz .livia-enviar[disabled] {
+	background: #dde3e9;
+	color: #ffffff;
+	cursor: default;
+}
+
+.livia-raiz .livia-rodape {
+	margin: 0;
+	padding: 0 16px 10px;
+	font-size: 10.5px;
+	line-height: 1.4;
+	color: var(--livia-tinta-fraca);
+}
+
+/* ------------------------------------------------------------ acesso/foco */
+
+.livia-raiz :focus-visible {
+	outline: 2px solid var(--livia-cor);
+	outline-offset: 2px;
+}
+
+.livia-raiz .livia-topo :focus-visible,
+.livia-raiz .livia-bolha:focus-visible {
+	outline-color: currentColor;
+}
+
+/* ------------------------------------------------------------- telefone */
+
+@media (max-width: 560px) {
+	.livia-raiz {
+		left: 16px;
+		bottom: 16px;
+	}
+
+	/* O painel já é lateral e de altura inteira; no celular ele toma a largura
+	   toda, porque 400px de painel sobre uma tela de 375 não deixa nada à
+	   mostra do formulário — e aí a coluna ao lado vira uma janela por cima. */
+	.livia-raiz .livia-janela {
+		right: 0;
+		width: 100%;
+	}
+
+	/* Com o painel cobrindo a tela inteira ninguém vê o que está atrás: o
+	   desfoque só gastaria GPU de celular. A camada escura fica, porque é ela
+	   que segura o toque de quem tenta sair pela borda. */
+	.livia-raiz .livia-veu {
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+	}
+
+	/* Entalhe e barra de gestos do celular. Sem isto, o cabeçalho fica sob o
+	   relógio do aparelho e o campo de texto, sob a barra do navegador. */
+	.livia-raiz .livia-topo {
+		padding-top: calc(13px + env(safe-area-inset-top, 0px));
+	}
+
+	.livia-raiz .livia-rodape {
+		padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+	}
+
+	.livia-raiz .livia-col {
+		max-width: 86%;
+	}
+
+	.livia-raiz .livia-convite {
+		width: 224px;
+	}
+
+	.livia-raiz .livia-bolha {
+		height: 48px;
+		padding: 0 18px 0 16px;
+		font-size: 14px;
+	}
+
+	.livia-raiz .livia-opiniao {
+		opacity: 1;
+	}
+
+	/* Alvo de toque. 26px é confortável para o ponteiro e pequeno demais para
+	   o dedo — o mínimo recomendado é 44. */
+	.livia-raiz .livia-polegar {
+		width: 40px;
+		height: 40px;
+	}
+
+	.livia-raiz .livia-polegar svg {
+		width: 17px;
+		height: 17px;
+	}
+
+	.livia-raiz .livia-tentar {
+		padding: 10px 16px;
+		font-size: 14px;
+	}
+
+	.livia-raiz .livia-sugestao {
+		padding: 10px 14px;
+		font-size: 14px;
+	}
+}
+
+/* ------------------------------------------------------- menos movimento */
+
+@media (prefers-reduced-motion: reduce) {
+	.livia-raiz .livia-janela,
+	.livia-raiz .livia-veu,
+	.livia-raiz .livia-convite,
+	.livia-raiz .livia-linha {
+		animation: none;
+	}
+
+	.livia-raiz .livia-bolha,
+	.livia-raiz .livia-campo,
+	.livia-raiz .livia-enviar,
+	.livia-raiz .livia-fechar {
+		transition: none;
+	}
+
+	.livia-raiz .livia-bolha:hover {
+		transform: none;
+	}
+
+	/* Os pontinhos ficam, parados: são o sinal de "estou respondendo", e sem
+	   eles a espera vira tela morta. */
+	.livia-raiz .livia-digitando span {
+		animation: none;
+		opacity: .5;
+	}
+
+	.livia-raiz .livia-balao.livia-escrevendo p:last-child::after {
+		animation: none;
+		opacity: .5;
+	}
+
+	.livia-raiz .livia-opiniao,
+	.livia-raiz .livia-polegar,
+	.livia-raiz .livia-tentar {
+		transition: none;
+	}
+
+	.livia-raiz .livia-tentar:active:not(:disabled) {
+		transform: none;
+	}
+}

@@ -1,0 +1,35 @@
+# --- segredos -------------------------------------------------------------
+# Nunca versione chave de API. O .env.example mostra o formato, sem valores.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# --- dado de cliente ------------------------------------------------------
+# Conversas contem nome, telefone e e-mail de gente real (LGPD).
+historico/
+
+# --- pacote gerado --------------------------------------------------------
+# Saida de empacotar.py. Regeravel em um comando, nao entra no repositorio.
+dist/
+*.zip
+*.rar
+
+# --- lixo -----------------------------------------------------------------
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+
+# composer do plugin
+livia/vendor/
+composer.lock
+
+# arquivos de referencia dos testes
+ref*.txt
+
+# servidor local do banco de provas do widget (ferramenta de desenvolvimento)
+.claude/launch.json

@@ -1,0 +1,38 @@
+name: testes
+
+# A suíte offline roda em segundos e não gasta cota: dá para exigir em todo push.
+# A bateria de comportamento (testar.py) precisa de um WordPress com o plugin e
+# de cota da API, então ela é manual, contra homologação — não entra aqui.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: mbstring, curl, json
+
+      - name: Sintaxe de todo PHP
+        run: find livia -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Suíte offline
+        run: php livia/tests/rodar.php
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Paridade da base entre PHP e Python
+        run: |
+          python -c "import livia, sys; open(sys.argv[1],'w',encoding='utf-8',newline='').write(livia.carregar_base())" ref.txt
+          php livia/tests/paridade-base.php ref.txt ""
+
+      - name: casos_de_teste.json é JSON válido
+        run: python -c "import json; print(len(json.load(open('casos_de_teste.json',encoding='utf-8'))), 'casos')"

@@ -1,0 +1,774 @@
+/**
+ * As duas telas da LivIA no wp-admin.
+ *
+ * Herda a tipografia e as cores do WordPress em vez de inventar as próprias:
+ * quem abre isto está no meio do painel, e uma tela que destoa parece
+ * software de terceiro mal instalado. O que se acrescenta aqui é o que o
+ * WordPress não tem pronto — cartões de situação, barra de cota, etiquetas de
+ * estado e uma tabela que não vira parede de texto.
+ */
+
+.livia-tela {
+	max-width: 1100px;
+}
+
+.livia-tela h2 {
+	margin: 2em 0 .6em;
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.livia-tela .description {
+	max-width: 44em;
+}
+
+/* ------------------------------------------------------------- situação */
+
+.livia-cartoes {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	gap: 12px;
+	margin: 16px 0 4px;
+}
+
+.livia-cartao {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-left: 3px solid #dcdcde;
+	border-radius: 4px;
+	padding: 12px 14px;
+}
+
+.livia-cartao.e-bom    { border-left-color: #2b7a3d; }
+.livia-cartao.e-atento { border-left-color: #b8860b; }
+.livia-cartao.e-ruim   { border-left-color: #b32d2e; }
+
+.livia-cartao .rotulo {
+	display: block;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: #646970;
+	font-weight: 600;
+	margin-bottom: 4px;
+}
+
+.livia-cartao .valor {
+	display: block;
+	font-size: 20px;
+	line-height: 1.25;
+	font-weight: 600;
+	color: #1d2327;
+	font-variant-numeric: tabular-nums;
+	overflow-wrap: anywhere;
+}
+
+.livia-cartao .valor.menor {
+	font-size: 15px;
+}
+
+.livia-cartao .nota {
+	display: block;
+	margin-top: 4px;
+	font-size: 12px;
+	color: #646970;
+	line-height: 1.4;
+}
+
+/* ------------------------------------------------------------ barra de cota */
+
+.livia-barra {
+	/* É um <span>: sem isto, largura e altura simplesmente não se aplicam e a
+	   barra sai com zero pixel de largura. */
+	display: block;
+	position: relative;
+	height: 8px;
+	margin: 8px 0 5px;
+	border-radius: 4px;
+	background: #eef0f2;
+	overflow: hidden;
+}
+
+.livia-barra span {
+	display: block;
+	height: 100%;
+	border-radius: 4px;
+	background: #2b7a3d;
+	transition: width .3s ease;
+}
+
+.livia-barra.e-atento span { background: #b8860b; }
+.livia-barra.e-ruim span   { background: #b32d2e; }
+
+/* --------------------------------------------------------------- etiquetas */
+
+.livia-etiqueta {
+	display: inline-block;
+	padding: 1px 7px;
+	border-radius: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .02em;
+	white-space: nowrap;
+}
+
+.livia-etiqueta.e-bom    { background: #e3f2e6; color: #1e5c2c; }
+.livia-etiqueta.e-atento { background: #fcf3e0; color: #8a5a0b; }
+.livia-etiqueta.e-ruim   { background: #fbeaea; color: #8f2322; }
+.livia-etiqueta.e-neutro { background: #eef0f2; color: #50575e; }
+
+/* ----------------------------------------------------------------- seções */
+
+.livia-secao {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 4px 18px 14px;
+	margin: 0 0 14px;
+}
+
+.livia-secao > h3 {
+	margin: 14px 0 2px;
+	font-size: 14px;
+}
+
+.livia-secao > .description {
+	margin-top: 0;
+}
+
+.livia-secao .form-table th {
+	width: 190px;
+	padding-left: 0;
+}
+
+/* Interruptor grande: é a coisa mais consequente da tela e não deve parecer
+   mais um checkbox entre outros. */
+.livia-chave {
+	display: flex;
+	align-items: flex-start;
+	gap: 11px;
+	padding: 13px 15px;
+	margin: 14px 0;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.livia-chave input {
+	margin: 3px 0 0;
+	width: 18px;
+	height: 18px;
+	flex: none;
+}
+
+.livia-chave label {
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+}
+
+.livia-chave .description {
+	margin: 2px 0 0;
+}
+
+.livia-chave.desligada {
+	border-left: 3px solid #b8860b;
+	background: #fffaf0;
+}
+
+/* ---------------------------------------------------------------- tabelas */
+
+.livia-tabela {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.livia-tela table.widefat td,
+.livia-tela table.widefat th {
+	vertical-align: top;
+}
+
+.livia-num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.livia-fala {
+	display: block;
+	max-width: 46em;
+	line-height: 1.5;
+}
+
+.livia-fala.cortada {
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.livia-quando {
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	color: #646970;
+}
+
+/* Barrinha proporcional dentro da célula: dá a forma da distribuição sem
+   precisar de gráfico nenhum. */
+.livia-proporcao {
+	display: block;
+	height: 4px;
+	margin-top: 4px;
+	border-radius: 2px;
+	background: #2271b1;
+	opacity: .35;
+	min-width: 2px;
+}
+
+/* ------------------------------------------------------------------ filtros */
+
+.livia-filtros {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 14px 0;
+}
+
+.livia-filtros .separa {
+	flex: 1;
+}
+
+/* --------------------------------------------------------------- respostas */
+
+@media (max-width: 782px) {
+	/* Rótulo em cima, campo embaixo. Só `th { width: auto }` não resolve: numa
+	   tabela, a largura mínima é a do conteúdo, então o campo de 25em segura a
+	   linha aberta e a página inteira passa a rolar de lado. O WordPress faz
+	   isto no core, mas a regra muda entre versões e esta tela é aberta no
+	   celular com frequência — aqui ela fica garantida. */
+	.livia-secao .form-table,
+	.livia-secao .form-table tbody,
+	.livia-secao .form-table tr,
+	.livia-secao .form-table th,
+	.livia-secao .form-table td {
+		display: block;
+		width: auto;
+	}
+
+	.livia-secao .form-table th {
+		padding: 14px 0 4px;
+	}
+
+	.livia-secao .form-table td {
+		padding: 0 0 4px;
+	}
+
+	/* Endereço, chave e trecho de código não quebram sozinhos e furam a tela. */
+	.livia-tela code {
+		overflow-wrap: anywhere;
+	}
+
+	/* Os campos do WordPress têm largura em em (`.regular-text` são 25em, uns
+	   350px). Num celular de 375px isso estoura a coluna, e a página inteira
+	   passa a rolar de lado. Herdar o que o core faz não basta: ele muda entre
+	   versões, e a tela é usada no celular com frequência. */
+	.livia-secao .form-table select,
+	.livia-secao .form-table textarea,
+	.livia-secao .form-table input[type="text"],
+	.livia-secao .form-table input[type="url"],
+	.livia-secao .form-table input[type="number"],
+	.livia-secao .form-table input[type="password"] {
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
+	/* O teto do dia cabe em cinco dígitos; esticar para a tela toda faria um
+	   campo de 300px para digitar "200". */
+	.livia-secao .form-table input.small-text {
+		width: 6em;
+		max-width: 6em;
+	}
+}
+
+/* ------------------------------------------------------ abas e atenção */
+
+.livia-titulo {
+	margin-bottom: 6px;
+}
+
+.livia-abas {
+	margin: 0 0 16px;
+}
+
+/**
+ * A faixa de atenção.
+ *
+ * Só o que exige decisão de quem está lendo. Um painel que avisa de tudo é um
+ * painel que ninguém lê — e aí o aviso que importava passa junto com os outros.
+ */
+.livia-atencao {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 10px;
+	margin: 0 0 18px;
+}
+
+.livia-aviso {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-left: 3px solid #dcdcde;
+	border-radius: 4px;
+	padding: 10px 14px;
+}
+
+.livia-aviso.e-ruim   { border-left-color: #b32d2e; background: #fdf7f7; }
+.livia-aviso.e-atento { border-left-color: #b8860b; background: #fffdf6; }
+
+.livia-aviso strong {
+	display: block;
+	font-size: 13px;
+	margin-bottom: 2px;
+}
+
+.livia-aviso span {
+	display: block;
+	font-size: 12px;
+	color: #50575e;
+	line-height: 1.45;
+}
+
+.livia-tranquilo {
+	margin: 0 0 18px;
+	color: #646970;
+	font-style: italic;
+}
+
+/* ------------------------------------------------------------- busca */
+
+.livia-busca {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.livia-busca input[type="search"] {
+	min-width: 15em;
+}
+
+/* -------------------------------------------------------- série diária */
+
+/**
+ * Catorze barras, em CSS.
+ *
+ * Carregar uma biblioteca de gráfico para catorze números custaria mais bytes
+ * do que a página inteira — e ela viria de um CDN, o que significa o endereço
+ * de quem abre o painel saindo para fora.
+ */
+.livia-serie {
+	display: flex;
+	align-items: flex-end;
+	gap: 6px;
+	height: 132px;
+	padding: 10px 14px 0;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.livia-dia {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	height: 100%;
+	min-width: 0;
+}
+
+/* A coluna ocupa a altura toda para as barras crescerem do mesmo chão. */
+.livia-coluna {
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	width: 100%;
+	flex: 1;
+	min-height: 0;
+}
+
+.livia-parte {
+	display: flex;
+	align-items: flex-end;
+	width: 100%;
+	max-width: 30px;
+	min-height: 2px;
+	border-radius: 3px 3px 0 0;
+	background: #c9d3dc;
+	position: relative;
+}
+
+/* A fatia que foi ao modelo, dentro do total. O resto são os atalhos. */
+.livia-modelo {
+	display: block;
+	width: 100%;
+	border-radius: 3px 3px 0 0;
+	background: #2271b1;
+	align-self: flex-end;
+}
+
+.livia-dia-rotulo {
+	margin-top: 5px;
+	font-size: 10px;
+	color: #787c82;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.livia-legenda {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+	margin-top: 8px;
+	max-width: none;
+}
+
+.livia-chip-modelo,
+.livia-chip-total {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 2px;
+}
+
+.livia-chip-modelo { background: #2271b1; }
+.livia-chip-total  { background: #c9d3dc; margin-left: 10px; }
+
+.livia-pico {
+	margin-left: auto;
+	color: #787c82;
+}
+
+/* ============================================================== conversas */
+
+/**
+ * Uma conversa por linha, que abre no diálogo inteiro.
+ *
+ * <details> nativo: o navegador já sabe abrir e fechar, funciona com teclado e
+ * com leitor de tela, e não custa uma linha de JavaScript.
+ */
+.livia-conversas {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.livia-conversa-item + .livia-conversa-item {
+	border-top: 1px solid #f0f0f1;
+}
+
+.livia-conversa-item > summary {
+	display: block;
+	padding: 11px 14px 11px 32px;
+	position: relative;
+	cursor: pointer;
+	list-style: none;
+	transition: background .12s ease;
+}
+
+.livia-conversa-item > summary::-webkit-details-marker {
+	display: none;
+}
+
+/* A seta é desenhada aqui porque a nativa muda de forma em cada navegador. */
+.livia-conversa-item > summary::before {
+	content: "";
+	position: absolute;
+	left: 14px;
+	top: 17px;
+	width: 6px;
+	height: 6px;
+	border-right: 1.5px solid #8c9196;
+	border-bottom: 1.5px solid #8c9196;
+	transform: rotate(-45deg);
+	transition: transform .15s ease;
+}
+
+.livia-conversa-item[open] > summary::before {
+	transform: rotate(45deg);
+	top: 15px;
+}
+
+.livia-conversa-item > summary:hover {
+	background: #f6f7f7;
+}
+
+.livia-conversa-item[open] > summary {
+	background: #f6f7f7;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.livia-conversa-item.tem-problema > summary {
+	box-shadow: inset 3px 0 0 #b32d2e;
+}
+
+.livia-conversa-topo {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.livia-conversa-meta {
+	color: #50575e;
+	font-weight: 600;
+}
+
+.livia-conversa-selos {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-left: auto;
+}
+
+.livia-conversa-turnos {
+	color: #787c82;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.livia-conversa-abertura {
+	display: block;
+	margin-top: 3px;
+	color: #646970;
+	font-size: 13px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/**
+ * No celular os selos descem para a própria linha.
+ *
+ * Empurrados para a direita por `margin-left: auto` numa tela de 375px, eles
+ * passavam do limite e eram CORTADOS por `overflow: hidden` da lista — e a
+ * conversa com mais selos, que é sempre a que mais precisa de atenção, era
+ * justamente a que perdia mais. Rolagem não resolveria: ninguém rola de lado
+ * dentro de um resumo.
+ */
+@media (max-width: 782px) {
+	.livia-conversa-selos {
+		margin-left: 0;
+		width: 100%;
+	}
+
+	.livia-conversa-turnos {
+		margin-left: auto;
+	}
+
+	/* O campo de busca em em estoura a tela, como os do formulário. */
+	.livia-busca {
+		width: 100%;
+	}
+
+	.livia-busca input[type="search"] {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* Catorze rótulos de data não cabem em 375px. Um sim, um não — o eixo
+	   continua legível e as barras continuam todas lá. */
+	.livia-dia:nth-child(even) .livia-dia-rotulo {
+		visibility: hidden;
+	}
+
+	.livia-serie {
+		gap: 3px;
+		padding: 10px 8px 0;
+	}
+
+	.livia-pico {
+		margin-left: 0;
+		width: 100%;
+	}
+}
+
+/* ----------------------------------------------------------- o diálogo */
+
+.livia-dialogo {
+	padding: 14px 16px 4px 32px;
+	background: #fbfbfc;
+}
+
+.livia-turno {
+	margin-bottom: 16px;
+}
+
+.livia-quem {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: #787c82;
+	margin-bottom: 3px;
+}
+
+.livia-quem em {
+	font-style: normal;
+	text-transform: none;
+	letter-spacing: 0;
+	font-weight: 400;
+	color: #8f2322;
+}
+
+/* O que o cliente achou daquela resposta. Fica junto do rótulo "LivIA", e não
+   numa coluna à parte, porque é uma propriedade da fala — não um dado solto. */
+.livia-voto {
+	font-weight: 600;
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 11px;
+}
+
+.livia-voto.e-sim { color: #1e5c2c; }
+.livia-voto.e-nao { color: #8f2322; }
+
+.livia-turno-num {
+	margin-left: auto;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+	font-variant-numeric: tabular-nums;
+	color: #a7aaad;
+}
+
+.livia-fala-cliente p,
+.livia-fala-livia p {
+	margin: 0;
+	padding: 8px 12px;
+	border-radius: 6px;
+	line-height: 1.55;
+	white-space: pre-wrap;
+	max-width: 62em;
+}
+
+.livia-fala-cliente p {
+	background: #eef1f4;
+	color: #1d2327;
+}
+
+.livia-fala-livia {
+	margin-top: 8px;
+}
+
+.livia-fala-livia p {
+	background: #fff;
+	border: 1px solid #e2e4e7;
+	color: #2c3338;
+}
+
+.livia-fala-livia.e-ruim p   { border-color: #e6b3b3; background: #fdf7f7; }
+.livia-fala-livia.e-atento p { border-color: #ecd9ab; background: #fffdf6; }
+.livia-fala-livia.e-neutro p { border-style: dashed; }
+
+.livia-apagar-conversa {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 0 14px;
+	border-top: 1px solid #edeef0;
+	margin-top: 4px;
+}
+
+.livia-apagar-conversa .description {
+	font-family: Consolas, Monaco, monospace;
+	font-size: 11px;
+	font-style: normal;
+}
+
+/* ---------------------------------------------------------- filtro/vazio */
+
+.livia-grupo-botoes {
+	display: inline-flex;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.livia-grupo-botoes a {
+	padding: 5px 12px;
+	font-size: 13px;
+	line-height: 20px;
+	color: #2c3338;
+	text-decoration: none;
+	border-left: 1px solid #e5e5e5;
+}
+
+.livia-grupo-botoes a:first-child {
+	border-left: 0;
+}
+
+.livia-grupo-botoes a:hover {
+	background: #f6f7f7;
+}
+
+.livia-grupo-botoes a.ativo {
+	background: #2271b1;
+	color: #fff;
+	font-weight: 600;
+}
+
+.livia-vazio {
+	padding: 34px 20px;
+	text-align: center;
+	color: #787c82;
+	background: #fff;
+	border: 1px dashed #dcdcde;
+	border-radius: 4px;
+}
+
+/* ------------------------------------------------------------- perigo */
+
+.livia-perigo {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-left: 3px solid #b32d2e;
+	border-radius: 4px;
+	padding: 14px 18px 18px;
+	max-width: 46em;
+}
+
+.livia-perigo p:first-child {
+	margin-top: 0;
+}
+
+.livia-perigo label {
+	line-height: 2;
+}
+
+/**
+ * O botão de apagar do WordPress, dentro das nossas telas.
+ *
+ * `.button-link-delete` é classe do core: sem a nossa classe na frente, a
+ * regra repintaria o botão de apagar de qualquer tela que carregasse este
+ * arquivo. Hoje ele só carrega nas nossas duas, mas regra que depende de onde
+ * foi enfileirada é armadilha esperando a terceira tela.
+ */
+.livia-tela .button-link-delete {
+	color: #b32d2e;
+	border-color: #b32d2e;
+	background: #fff;
+}
+
+.livia-tela .button-link-delete:hover {
+	background: #b32d2e;
+	color: #fff;
+	border-color: #b32d2e;
+}
